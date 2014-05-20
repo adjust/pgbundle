@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+require 'thor'
+require 'thor/group'
+require 'pgbundle'
+require 'pry'
+
+module PgBundle
+  class Cli < Thor
+    desc 'install', 'installs extensions'
+    def install(pgfile = 'Pgfile')
+      definition = Dsl.new.eval_pgfile(pgfile)
+      definition.link_dependencies
+      definition.available_extensions.each do |dep|
+        say_status('exists', dep.name)
+      end
+
+      installed = definition.install
+
+      installed.each do |d|
+        say_status('install', d.name, :yellow)
+      end
+    rescue InstallError, ExtensionCreateError, CircularDependencyError => e
+      say_status('error', e.message, :red)
+    end
+
+    desc 'check', 'checks availability of required extensions'
+    def check(pgfile = 'Pgfile')
+    end
+
+    desc 'create', 'runs CREATE EXTENSION command on the database'
+    def create(pgfile = 'Pgfile')
+    end
+
+    no_commands do
+
+    end
+  end
+end
+
+PgBundle::Cli.start(ARGV)

@@ -1,0 +1,49 @@
+require 'pg'
+module PgBundle
+  # The Definition class collects all objects defined in a PgFile
+  class Definition
+    attr_accessor :server, :database, :extensions, :errors
+    def initialize
+      @extensions = {}
+      @errors = []
+    end
+
+    # returns an Array of missing Extensions
+    def missing_extensions
+      link_dependencies
+      extensions.select { |_, dep| !dep.available?(database) }.values
+    end
+
+    # returns an Array of already available Extensions
+    def available_extensions
+      link_dependencies
+      extensions.select { |_, dep| dep.available?(database) }.values
+    end
+
+    # installs missing extensions returns all successfully installed Extensions
+    def install
+      installed = missing_extensions.map do |dep|
+        dep.install(database)
+        dep
+      end
+
+      installed.select { |dep| dep.available?(database) }
+    end
+
+    # links extension dependencies to each other
+    def link_dependencies
+      extensions.each do |_, ex|
+        undefined_dependencies = ex.dependencies.select { |k, v| v.source.nil? }.keys
+        undefined_dependencies.each do |name|
+          if extensions[name]
+            ex.dependencies[name] = extensions[name]
+          else
+            ex.dependencies[name] = PgBundle::Extension.new(name)
+          end
+        end
+      end
+    rescue SystemStackError
+      raise 'Circular Dependency Detected'
+    end
+  end
+end

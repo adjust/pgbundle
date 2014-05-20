@@ -1,0 +1,5 @@
+# baz extension
+comment = 'Useless Sample Extension'
+default_version = '0.0.2'
+relocatable = true
+requires = 'foo'

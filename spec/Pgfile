@@ -1,0 +1,6 @@
+database 'pgbundle_test', host: 'localhost'
+
+pgx 'hstore'
+pgx 'bar', path: './spec/sample_extensions/bar', requires: 'ltree'
+pgx 'baz', '0.0.2', path: './spec/sample_extensions/baz', requires: 'foo'
+pgx 'foo', '0.0.1', path: './spec/sample_extensions/foo'
