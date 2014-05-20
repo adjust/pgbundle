@@ -6,13 +6,13 @@ module PgBundle
   # on a typical environment ssh access is needed if the database host differs from
   # the Pgfile host
   class Database
-    attr_accessor :name, :user, :host
+    attr_accessor :name, :user, :host, :system_user, :use_sudo
     def initialize(name, opts = {})
-      @name     = name
-      @user     = opts[:user]     || 'postgres'
-      @host     = opts[:host]     || 'localhost'
-      @make_cmd = opts[:make_cmd] || 'make'
-      @use_sudo = opts[:use_sudo] || 'false'
+      @name        = name
+      @user        = opts[:user]        || 'postgres'
+      @host        = opts[:host]        || 'localhost'
+      @use_sudo    = opts[:use_sudo]    || false
+      @system_user = opts[:system_user] || 'postgres'
     end
 
     def connection
@@ -46,7 +46,71 @@ module PgBundle
       rescue TransactionRollback
     end
 
+    # loads the source, runs make install and removes the source afterwards
+    def make_install(source, ext_name)
+      remove_source(ext_name)
+      source.load(host, system_user, load_destination(ext_name))
+      run(make_install_cmd(ext_name))
+      remove_source(ext_name)
+    end
+
+    # loads the source and runs make uninstall
+    def make_uninstall(source, ext_name)
+      remove_source(ext_name)
+      source.load(host, system_user, load_destination(ext_name))
+      run(make_uninstall_cmd(ext_name))
+      remove_source(ext_name)
+    end
+
+    def drop_extension(name)
+      execute "DROP EXTENSION IF EXISTS #{name}"
+    end
+
+    def load_destination(ext_name)
+      "/tmp/#{ext_name}"
+    end
+
+    # returns currently installed extensions
+    def current_definition
+      result = execute('SELECT name, version, requires FROM pg_available_extension_versions WHERE installed').to_a
+    end
+
     private
+
+    def sudo
+      use_sudo ? 'sudo' : ''
+    end
+
+    def remove_source(name)
+      run("rm -rf #{load_destination(name)}")
+    end
+
+    def make_install_cmd(name)
+      "cd #{load_destination(name)} && #{sudo} make clean && make install"
+    end
+
+    def make_uninstall_cmd(name)
+      "cd #{load_destination(name)} && #{sudo} make uninstall"
+    end
+
+    def run(cmd)
+      if host == 'localhost'
+        local cmd
+      else
+        remote cmd
+      end
+    end
+
+    def local(cmd)
+      %x(#{cmd})
+    end
+
+    def remote(cmd)
+      Net::SSH.start(host, system_user) do |ssh|
+        ssh.exec cmd
+      end
+    end
+
 
     def silence
       begin

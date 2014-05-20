@@ -7,7 +7,7 @@ module PgBundle
       @extensions = []
     end
 
-    def eval_pgfile(pgfile)
+    def eval_pgfile(pgfile, contents=nil)
       contents ||= File.read(pgfile.to_s)
       instance_eval(contents)
       @definition
@@ -18,7 +18,7 @@ module PgBundle
       e.backtrace[0] = "#{e.backtrace[0]}: #{e.message} (#{e.class})"
       puts e.backtrace.join("\n       ")
       raise PgfileError, "There was an error in your Pgfile," \
-        " and PgBundle cannot continue. " \
+        " and pgbundle cannot continue. " \
         + e.message
     end
 

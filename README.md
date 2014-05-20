@@ -13,7 +13,7 @@ define your dependent postgres extensions in a Pgfile like this:
 ```
 #Pgfile
 
-database 'my_database', host: 'my.db.server' , use_sudo: true, make_cmd: 'make'
+database 'my_database', host: 'my.db.server', use_sudo: true, system_user: 'postgres'
 
 pgx 'hstore'
 pgx 'my_extension', '1.0.2', github: me/my_extension
@@ -33,10 +33,13 @@ installs the extensions and dependencies on your database server
 
 checks whether all dependencies are available for creation on the database server
 
-### create extensions
+## getting started
 
-  pgbundle create
+if your already have some database on your current project you can get a starting point with
 
-runs the `CREATE EXTENSION` command on the database to create all extension at the
-defined version
+  pgbundle init
+
+lets say your database named 'my_project' runs on localhost with user postges
+
+  pgbundle init my_project -u postgres -h localhost
 

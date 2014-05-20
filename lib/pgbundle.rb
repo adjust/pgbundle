@@ -23,15 +23,11 @@ module PgBundle
   class TransactionRollback < StandardError; end
 
   class ExtensionNotFound < ExtensionCreateError
-    def initialize(name, version, msg)
-      # could not stat file "/../postgresql92/extension/foo--0.0.3.sql": No such file or directory\n
-      # could not stat file "/../postgresql92/extension/foo.control": No such file or directory\n
-      if msg =~ /\.control":/
-        super "Extension #{name} not available"
-      elsif msg =~ /\.sql":/
+    def initialize(name, version = nil)
+      if version
         super "specified Version #{version} for Extension #{name} not available"
       else
-        super msg
+        super "Extension #{name} not available"
       end
     end
   end

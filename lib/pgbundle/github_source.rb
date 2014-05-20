@@ -2,12 +2,12 @@ require 'tmpdir'
 module PgBundle
   # The GithubSource class defines a Github Source
   class GithubSource < BaseSource
-    def load(host, dest)
+    def load(host, user, dest)
       clone(dest)
       if host == 'localhost'
         copy_local(clone_dir, dest)
       else
-        copy_to_remote(host, clone_dir, dest)
+        copy_to_remote(host, user, clone_dir, dest)
       end
     end
 
@@ -20,7 +20,7 @@ module PgBundle
     def clone(dest)
       # git clone user@git-server:project_name.git -b branch_name /some/folder
       %x((git clone git@github.com:#{path}.git -b #{branch_name} --quiet --depth=1 #{clone_dir} && rm -rf #{clone_dir}/.git}) 2>&1)
-      unless $CHILD_STATUS.success?
+      unless $?.success?
         fail GitCommandError
       end
     end

@@ -7,7 +7,7 @@ module PgBundle
       @path = path
     end
 
-    def load(host, dest)
+    def load(host, user, dest)
       fail NotImplementedError
     end
 
@@ -17,8 +17,8 @@ module PgBundle
       FileUtils.cp_r source, dest
     end
 
-    def copy_to_remote(host, source, dest)
-      Net::SCP.start(host, nil) do |scp|
+    def copy_to_remote(host, user, source, dest)
+      Net::SCP.start(host, user) do |scp|
         scp.upload(source, dest, recursive: true)
       end
     end

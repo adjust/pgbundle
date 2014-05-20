@@ -2,7 +2,7 @@ require 'pg'
 module PgBundle
   # The Definition class collects all objects defined in a PgFile
   class Definition
-    attr_accessor :server, :database, :extensions, :errors
+    attr_accessor :database, :extensions, :errors
     def initialize
       @extensions = {}
       @errors = []
@@ -30,6 +30,28 @@ module PgBundle
       installed.select { |dep| dep.available?(database) }
     end
 
+    def init
+      ["database '#{database.name}', host: '#{database.host}', user: #{database.user}, system_user: #{database.system_user}, use_sudo: #{database.use_sudo}"] +
+      database.current_definition.map do |r|
+        name, version = r['name'], r['version']
+        requires = r['requires'] ? ", requires: " + r['requires'].gsub(/[{},]/,{'{' => '%w(', '}' =>')', ','=> ' '}) : ''
+        "pgx '#{name}', '#{version}'#{requires}"
+      end
+    end
+
+    # returns an array hashes with dependency information
+    # [{name: 'foo', installed: true, created: false }]
+    def check
+      link_dependencies
+      extensions.map do |_,ext|
+        {
+          name: ext.name,
+          installed: ext.installed?(database),
+          created: ext.created?(database)
+        }
+      end
+    end
+
     # links extension dependencies to each other
     def link_dependencies
       extensions.each do |_, ex|
@@ -42,8 +64,7 @@ module PgBundle
           end
         end
       end
-    rescue SystemStackError
-      raise 'Circular Dependency Detected'
+      self
     end
   end
 end

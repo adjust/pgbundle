@@ -8,31 +8,52 @@ module PgBundle
   class Cli < Thor
     desc 'install', 'installs extensions'
     def install(pgfile = 'Pgfile')
-      definition = Dsl.new.eval_pgfile(pgfile)
-      definition.link_dependencies
-      definition.available_extensions.each do |dep|
+      definition(pgfile).available_extensions.each do |dep|
         say_status('exists', dep.name)
       end
 
-      installed = definition.install
+      installed = definition(pgfile).install
 
       installed.each do |d|
         say_status('install', d.name, :yellow)
       end
     rescue InstallError, ExtensionCreateError, CircularDependencyError => e
       say_status('error', e.message, :red)
+      exit 1
     end
 
     desc 'check', 'checks availability of required extensions'
     def check(pgfile = 'Pgfile')
+      missing = false
+      definition(pgfile).check.each do |d|
+        if d[:created]
+          say_status('created', d[:name])
+        else
+          unless d[:installed]
+            say_status('missing', d[:name], :red)
+            missing = true
+          end
+          say_status('installed', d[:name], :yellow) if d[:installed]
+        end
+      end
+      exit 1 if missing
     end
 
-    desc 'create', 'runs CREATE EXTENSION command on the database'
-    def create(pgfile = 'Pgfile')
+    desc 'init', 'write an initial pgfile to stdout'
+    method_options %w( user -u ) => :string
+    method_options %w( host -h ) => :string
+    def init(db_name)
+      definition = PgBundle::Definition.new
+      definition.database = PgBundle::Database.new(db_name, options)
+      say("found the following definition for your current database:\n\n")
+      say definition.init.join("\n")
     end
 
     no_commands do
-
+      def definition(pgfile)
+        definition = Dsl.new.eval_pgfile(pgfile)
+        definition.link_dependencies
+      end
     end
   end
 end

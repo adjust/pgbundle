@@ -32,7 +32,7 @@ describe PgBundle::Extension  do
         end
 
         it 'should be already installed' do
-          subject.should be_already_installed(database)
+          subject.should be_created_any_version(database)
         end
 
         it 'should be available' do
