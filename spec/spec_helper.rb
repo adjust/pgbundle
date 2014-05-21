@@ -42,6 +42,6 @@ RSpec.configure do |config|
   end
 
   def database
-    @db ||= PgBundle::Database.new('pgbundle_test')
+    @db ||= PgBundle::Database.new('pgbundle_test', use_sudo: true)
   end
 end
