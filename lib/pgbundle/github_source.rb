@@ -19,9 +19,10 @@ module PgBundle
 
     def clone(dest)
       # git clone user@git-server:project_name.git -b branch_name /some/folder
-      %x((git clone git@github.com:#{path}.git -b #{branch_name} --quiet --depth=1 #{clone_dir} && rm -rf #{clone_dir}/.git}) 2>&1)
+      cmd = "git clone git@github.com:#{path}.git -b #{branch_name} --quiet --depth=1 #{clone_dir}"
+      %x((#{cmd} && rm -rf #{clone_dir}/.git}) 2>&1)
       unless $?.success?
-        fail GitCommandError
+        fail GitCommandError, cmd
       end
     end
 

@@ -33,6 +33,8 @@ module PgBundle
       @definition.extensions[ext.name] = ext
     end
 
+    private
+
     def extract_options!(arr)
       if arr.last.is_a? Hash
         arr.pop
