@@ -1,3 +1,4 @@
+require 'net/scp'
 module PgBundle
   # The BaseSource class defines an Extension source like PathSource or GithubSource
   # it defines how to get the code and run make install on a given host (e.g. database server)
