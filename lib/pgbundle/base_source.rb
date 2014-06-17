@@ -15,6 +15,7 @@ module PgBundle
 
     def copy_local(source, dest)
       FileUtils.cp_r source, dest
+      FileUtils.chmod_R(0777, dest)
     end
 
     def copy_to_remote(host, user, source, dest)
