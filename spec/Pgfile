@@ -1,4 +1,4 @@
-database 'pgbundle_test', host: 'localhost'
+database 'pgbundle_test', host: 'localhost', port: 54321
 
 pgx 'hstore'
 pgx 'bar', path: './spec/sample_extensions/bar', requires: 'ltree'
