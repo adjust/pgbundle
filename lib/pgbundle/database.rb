@@ -6,7 +6,7 @@ module PgBundle
   # on a typical environment ssh access is needed if the database host differs from
   # the Pgfile host
   class Database
-    attr_accessor :name, :user, :host, :system_user, :use_sudo, :port
+    attr_accessor :name, :user, :host, :system_user, :use_sudo, :port, :force_ssh
     def initialize(name, opts = {})
       @name        = name
       @user        = opts[:user]        || 'postgres'
@@ -14,6 +14,8 @@ module PgBundle
       @use_sudo    = opts[:use_sudo]    || false
       @system_user = opts[:system_user] || 'postgres'
       @port        = opts[:port]        || 5432
+      @force_ssh   = opts[:force_ssh]   || false
+      puts "initialize with force_ssh: #{force_ssh}"
     end
 
     def connection
@@ -95,7 +97,8 @@ module PgBundle
     end
 
     def run(cmd)
-      if host == 'localhost'
+      puts "run: #{cmd}"
+      if host == 'localhost' && !force_ssh
         local cmd
       else
         remote cmd
@@ -103,10 +106,12 @@ module PgBundle
     end
 
     def local(cmd)
+      puts "local exec"
       %x(#{cmd})
     end
 
     def remote(cmd)
+      puts "remote exec"
       Net::SSH.start(host, system_user) do |ssh|
         ssh.exec cmd
       end
