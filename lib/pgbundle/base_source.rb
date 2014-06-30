@@ -4,6 +4,7 @@ module PgBundle
   # it defines how to get the code and run make install on a given host (e.g. database server)
   class BaseSource
     attr_accessor :path
+
     def initialize(path)
       @path = path
     end

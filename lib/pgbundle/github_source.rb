@@ -2,6 +2,14 @@ require 'tmpdir'
 module PgBundle
   # The GithubSource class defines a Github Source
   class GithubSource < BaseSource
+    attr_reader :opts
+
+    def initialize(path, opts = {})
+      @opts = opts
+
+      super(path)
+    end
+
     def load(host, user, dest)
       clone(dest)
       if host == 'localhost'
@@ -11,19 +19,23 @@ module PgBundle
       end
     end
 
-    def branch_name
-      @branch || 'master'
-    end
-
     private
 
     def clone(dest)
-      # git clone user@git-server:project_name.git -b branch_name /some/folder
-      cmd = "git clone git@github.com:#{path}.git -b #{branch_name} --quiet --depth=1 #{clone_dir}"
-      %x((#{cmd} && rm -rf #{clone_dir}/.git}) 2>&1)
+      %x((#{git_command} && rm -rf #{clone_dir}/.git}) 2>&1)
+
       unless $?.success?
         fail GitCommandError, cmd
       end
+    end
+
+    # git clone user@git-server:project_name.git -b branch_name /some/folder
+    def git_command
+      "git clone git@github.com:#{path}.git -b #{branch} --quiet --depth=1 #{clone_dir}"
+    end
+
+    def branch
+      @branch ||= opts[:branch].to_s.empty? ? 'master' : opts[:branch]
     end
 
     def clone_dir
