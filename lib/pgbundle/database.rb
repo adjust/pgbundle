@@ -89,10 +89,10 @@ module PgBundle
     end
 
     def make_install_cmd(name)
-      <<-CMD.gsub(/\s+/, ' ')
-        cd #{load_destination(name)} && \
-        #{sudo} make clean && \
-        #{sudo} make && \
+      <<-CMD.gsub(/\s+/, ' ').strip
+        cd #{load_destination(name)} &&
+        #{sudo} make clean &&
+        #{sudo} make &&
         #{sudo} make install
       CMD
     end
