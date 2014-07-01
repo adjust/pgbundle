@@ -10,6 +10,6 @@ describe PgBundle::Dsl do
   context 'parsing options' do
     let(:opts) { { :github => 'adjust/numhstore', :branch => 'topic' } }
 
-    specify { subject.extensions['myext'].source.opts.should eq opts }
+    specify { subject.extensions['myext'].source.branch.should eq 'topic' }
   end
 end
