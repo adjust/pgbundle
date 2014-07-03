@@ -24,7 +24,7 @@ module PgBundle
       %x((#{git_command} && rm -rf #{clone_dir}/.git}) 2>&1)
 
       unless $?.success?
-        fail GitCommandError, cmd
+        fail GitCommandError, git_command
       end
     end
 
