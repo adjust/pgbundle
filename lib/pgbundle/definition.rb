@@ -30,6 +30,16 @@ module PgBundle
       installed.select { |dep| dep.available?(database) }
     end
 
+    # installs all required extensions
+    def install!
+      installed = extensions.map do |_, dep|
+        dep.install(database)
+        dep
+      end
+
+      installed.select { |dep| dep.available?(database) }
+    end
+
     def init
       ["database '#{database.name}', host: '#{database.host}', user: #{database.user}, system_user: #{database.system_user}, use_sudo: #{database.use_sudo}"] +
       database.current_definition.map do |r|

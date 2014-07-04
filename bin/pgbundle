@@ -7,12 +7,17 @@ require 'pry'
 module PgBundle
   class Cli < Thor
     desc 'install', 'installs extensions'
+    method_options %w( force -f ) => :boolean
     def install(pgfile = 'Pgfile')
-      definition(pgfile).available_extensions.each do |dep|
-        say_status('exists', dep.name)
-      end
+      if options.force?
+        installed = definition(pgfile).install!
+      else
+        definition(pgfile).available_extensions.each do |dep|
+          say_status('exists', dep.name)
+        end
 
-      installed = definition(pgfile).install
+        installed = definition(pgfile).install
+      end
 
       installed.each do |d|
         say_status('install', d.name, :yellow)
