@@ -299,7 +299,7 @@ module PgBundle
       if opts[:path]
         @source = PathSource.new(opts[:path])
       elsif opts[:github]
-        @source = GithubSource.new(opts[:github], opts[:branch].to_s)
+        @source = GithubSource.new(opts[:github], opts[:branch])
       end
     end
   end
