@@ -33,7 +33,7 @@ module PgBundle
     # installs all required extensions
     def install!
       installed = extensions.map do |_, dep|
-        dep.install(database)
+        dep.install(database, true)
         dep
       end
 
