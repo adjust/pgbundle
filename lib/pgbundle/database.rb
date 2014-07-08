@@ -53,7 +53,7 @@ module PgBundle
 
     # loads the source, runs make install and removes the source afterwards
     def make_install(source, ext_name)
-      run("mkdir -p /tmp/pgbundle/")
+      run("mkdir -p -m 0777 /tmp/pgbundle/")
       remove_source(ext_name)
       source.load(host, system_user, load_destination(ext_name))
       run(make_install_cmd(ext_name))
