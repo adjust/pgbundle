@@ -5,7 +5,7 @@ module PgBundle
     attr_reader :branch
 
     def initialize(path, branch = 'master')
-      @branch = branch
+      @branch = branch || 'master'
       super(path)
     end
 
