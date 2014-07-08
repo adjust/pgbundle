@@ -101,13 +101,15 @@ module PgBundle
     end
 
     # installs extension and all dependencies using make install
+    # if optional parameter force is true the extension will be installed
+    # even if it's already there
     # returns true if Extension can successfully be created using CREATE EXTENSION
-    def install(database)
+    def install(database, force = false)
       unless dependencies.empty?
-        install_dependencies(database)
+        install_dependencies(database, force)
       end
 
-      make_install(database)
+      make_install(database, force)
       raise ExtensionNotFound.new(name, version) unless installed?(database)
 
       add_missing_required_dependencies(database)
@@ -196,8 +198,8 @@ module PgBundle
 
     # loads the source and runs make install
     # returns: self
-    def make_install(database)
-      return self if installed?(database)
+    def make_install(database, force = false)
+      return self if installed?(database) && !force
 
       fail SourceNotFound, name if source.nil?
 
@@ -212,10 +214,10 @@ module PgBundle
       stmt
     end
 
-    def install_dependencies(database)
+    def install_dependencies(database, force = false)
       begin
         dependencies.each do |_, d|
-          d.install(database)
+          d.install(database, force)
         end
       rescue InstallError, ExtensionCreateError => e
         raise DependencyNotFound.new(name, e.message)
