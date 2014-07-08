@@ -72,7 +72,7 @@ module PgBundle
     end
 
     def load_destination(ext_name)
-      "/tmp/#{ext_name}"
+      "/tmp/pgbundle/#{ext_name}"
     end
 
     # returns currently installed extensions
@@ -92,6 +92,7 @@ module PgBundle
 
     def make_install_cmd(name)
       <<-CMD.gsub(/\s+/, ' ').strip
+        mkdir -p #{load_destination(name)} &&
         cd #{load_destination(name)} &&
         #{sudo} make clean &&
         #{sudo} make &&
