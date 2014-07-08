@@ -10,19 +10,18 @@ module PgBundle
     end
 
     def load(host, user, dest)
-      clone(dest)
+      clone
       if host == 'localhost'
-        copy_local(clone_dir, dest)
+        copy_local("#{clone_dir}/", dest)
       else
-        copy_to_remote(host, user, clone_dir, dest)
+        copy_to_remote(host, user, "#{clone_dir}/", dest)
       end
     end
 
     private
 
-    def clone(dest)
-      %x((#{git_command} && rm -rf #{clone_dir}/.git}) 2>&1)
-
+    def clone
+      %x((rm -rf #{clone_dir} && #{git_command} && rm -rf #{clone_dir}/.git}) 2>&1)
       unless $?.success?
         fail GitCommandError, git_command
       end
