@@ -32,6 +32,8 @@ module PgBundle
       end
     end
 
+    alias_method :exec, :execute
+
     def transaction(&block)
       silence do
         connection.transaction(&block)

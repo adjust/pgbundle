@@ -65,11 +65,11 @@ module PgBundle
     end
 
     # returns true if extension is already created with the correct version in the given database
-    def created?(database)
+    def created?(database_or_connection)
       if version
-        result = database.execute("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}' AND version = '#{version}' AND installed").to_a
+        result = database_or_connection.exec("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}' AND version = '#{version}' AND installed").to_a
       else
-        result = database.execute("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}' AND installed").to_a
+        result = database_or_connection.exec("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}' AND installed").to_a
       end
 
       if result.empty?
@@ -81,11 +81,11 @@ module PgBundle
 
     # returns if the extension is already installed on the database system
     # if it is also already created it returns the installed version
-    def installed?(database)
+    def installed?(database_or_connection)
       if version
-        result = database.execute("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}' AND version = '#{version}'").to_a
+        result = database_or_connection.exec("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}' AND version = '#{version}'").to_a
       else
-        result = database.execute("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}'").to_a
+        result = database_or_connection.exec("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}'").to_a
       end
 
       if result.empty?
@@ -123,11 +123,22 @@ module PgBundle
       make_uninstall(database)
     end
 
-    private
+    # create the extension along with it's dependencies in a transaction
+    def create_with_dependencies(database)
+      return true if created?(database)
 
-    # create extension on a given database connection
-    def create!(con)
-      con.exec create_stmt
+      database.transaction do |con|
+        begin
+          create_dependencies(con)
+          create_or_update!(con)
+        rescue PG::UndefinedFile => err
+          raise ExtensionNotFound.new(name, version)
+        rescue PG::UndefinedObject => err
+          raise MissingDependency.new(name, err.message)
+        end
+      end
+
+      true
     end
 
     # create the dependency graph on the given connection
@@ -136,20 +147,39 @@ module PgBundle
       dependencies.each do |_, d|
         fail CircularDependencyError.new(name, d.name) if d.resolving_dependencies
         d.create_dependencies(con)
-        d.create!(con)
+        d.create_or_update!(con)
       end
       @resolving_dependencies = false
     end
 
+    # create extension on a given database connection
+    def create!(con)
+      con.exec create_stmt
+    end
+
+    def create_or_update!(con)
+      return true if created?(con)
+      if created_any_version?(con)
+        con.exec update_stmt
+      else
+        create!(con)
+      end
+      true
+    end
+
+
+
     # checks if Extension is already installed at any version thus need ALTER EXTENSION to install
-    def created_any_version?(database)
-      result = database.execute("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}' AND installed").to_a
+    def created_any_version?(database_or_connection)
+      result = database_or_connection.exec("SELECT * FROM pg_available_extension_versions WHERE name ='#{name}' AND installed").to_a
       if result.empty?
         false
       else
         true
       end
     end
+
+    private
 
     # adds dependencies that are required but not defined yet
     def add_missing_required_dependencies(database)
@@ -199,7 +229,7 @@ module PgBundle
     # loads the source and runs make install
     # returns: self
     def make_install(database, force = false)
-      return self if installed?(database) && !force
+      return self if installed?(database) && (!force || source.nil?)
 
       fail SourceNotFound, name if source.nil?
 
@@ -212,6 +242,10 @@ module PgBundle
       stmt += " VERSION '#{version}'" unless version.nil? || version.empty?
 
       stmt
+    end
+
+    def update_stmt
+      "ALTER EXTENSION #{name} UPDATE TO '#{version}'"
     end
 
     def install_dependencies(database, force = false)
@@ -251,7 +285,7 @@ module PgBundle
       result = true
       database.execute 'BEGIN'
       begin
-        database.execute "ALTER EXTENSION #{name} UPDATE TO '#{version}'"
+        database.execute update_stmt
       rescue PG::UndefinedFile, PG::UndefinedObject => err
         @error = err.message
         result = false

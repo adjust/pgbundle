@@ -44,6 +44,13 @@ module PgBundle
       exit 1 if missing
     end
 
+    desc 'create', 'create the extension at the desired version'
+    def create(pgfile = 'Pgfile')
+      definition(pgfile).create.each do | d |
+        say_status('created', d.name)
+      end
+    end
+
     desc 'init', 'write an initial pgfile to stdout'
     method_options %w( user -u ) => :string
     method_options %w( host -h ) => :string
