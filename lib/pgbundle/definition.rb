@@ -49,7 +49,7 @@ module PgBundle
     end
 
     def init
-      ["database '#{database.name}', host: '#{database.host}', user: #{database.user}, system_user: #{database.system_user}, use_sudo: #{database.use_sudo}"] +
+      ["database '#{database.name}', host: '#{database.host}', user: '#{database.user}', system_user: '#{database.system_user}', use_sudo: #{database.use_sudo}"] +
       database.current_definition.map do |r|
         name, version = r['name'], r['version']
         requires = r['requires'] ? ", requires: " + r['requires'].gsub(/[{},]/,{'{' => '%w(', '}' =>')', ','=> ' '}) : ''

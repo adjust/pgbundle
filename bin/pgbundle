@@ -2,7 +2,6 @@
 require 'thor'
 require 'thor/group'
 require 'pgbundle'
-require 'pry'
 
 module PgBundle
   class Cli < Thor
