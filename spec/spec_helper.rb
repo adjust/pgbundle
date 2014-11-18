@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'pgbundle'
 require 'pg'
-require 'pry'
 
 Dir.glob('spec/support/**/*.rb').each { |f| require f }
 

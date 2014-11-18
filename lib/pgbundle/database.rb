@@ -1,6 +1,6 @@
 require 'pg'
 require 'net/ssh'
-require 'pry'
+
 module PgBundle
   # The Database class defines on which database the extensions should be installed
   # Note to install an extension the code must be compiled on the database server
