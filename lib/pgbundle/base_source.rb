@@ -13,6 +13,10 @@ module PgBundle
       fail NotImplementedError
     end
 
+    def clean
+      fail NotImplementedError
+    end
+
     private
 
     def copy_local(source, dest)

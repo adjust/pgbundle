@@ -65,6 +65,22 @@ describe PgBundle::Extension  do
       end
     end
 
+    context 'installing from github' do
+      subject { PgBundle::Extension.new('ltree', '1.0', github: 'adjust/ltree') }
+
+      before do
+        allow_any_instance_of(PgBundle::GithubSource)
+          .to receive(:clone_dir)
+          .and_return('/tmp/pgbundle/tree_tmp')
+
+        subject.install(database, true)
+      end
+
+      it 'cleans the tmp directory after install' do
+        expect(Dir.exists?('/tmp/pgbundle/tree_tmp')).to be_false
+      end
+    end
+
     context 'require not found'  do
       subject { PgBundle::Extension.new('foo', '0.0.2', path: './spec/sample_extensions/foo', requires: PgBundle::Extension.new('noope')) }
 

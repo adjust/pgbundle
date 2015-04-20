@@ -18,6 +18,10 @@ module PgBundle
       end
     end
 
+    def clean
+      FileUtils.remove_dir(clone_dir, true)
+    end
+
     private
 
     def clone

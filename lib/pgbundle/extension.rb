@@ -108,7 +108,6 @@ module PgBundle
       unless dependencies.empty?
         install_dependencies(database, force)
       end
-
       make_install(database, force)
       raise ExtensionNotFound.new(name, version) unless installed?(database)
 
