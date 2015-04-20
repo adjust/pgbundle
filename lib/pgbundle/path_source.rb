@@ -11,5 +11,8 @@ module PgBundle
         copy_to_remote(host, user, path, dest)
       end
     end
+
+    def clean
+    end
   end
 end

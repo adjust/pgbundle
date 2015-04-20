@@ -58,6 +58,7 @@ module PgBundle
       source.load(host, system_user, load_destination(ext_name))
       run(make_install_cmd(ext_name))
       remove_source(ext_name)
+      source.clean
     end
 
     # loads the source and runs make uninstall
@@ -66,6 +67,7 @@ module PgBundle
       source.load(host, system_user, load_destination(ext_name))
       run(make_uninstall_cmd(ext_name))
       remove_source(ext_name)
+      source.clean
     end
 
     def drop_extension(name)
