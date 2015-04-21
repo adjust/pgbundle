@@ -7,19 +7,24 @@ module PgBundle
   class Cli < Thor
     desc 'install', 'installs extensions'
     method_options %w( force -f ) => :boolean
-    def install(pgfile = 'Pgfile')
-      if options.force?
-        installed = definition(pgfile).install!
-      else
-        definition(pgfile).available_extensions.each do |dep|
-          say_status('exists', dep.name)
+    def install(*pgfiles)
+      if pgfiles.count == 0
+	pgfiles = ['Pgfile']
+      end
+      pgfiles.each do |pgfile|
+        if options.force?
+          installed = definition(pgfile).install!
+        else
+          definition(pgfile).available_extensions.each do |dep|
+            say_status('exists', dep.name)
+          end
+
+          installed = definition(pgfile).install
         end
 
-        installed = definition(pgfile).install
-      end
-
-      installed.each do |d|
-        say_status('install', d.name, :yellow)
+        installed.each do |d|
+          say_status('install', d.name, :yellow)
+        end
       end
     rescue InstallError, ExtensionCreateError, CircularDependencyError => e
       say_status('error', e.message, :red)
