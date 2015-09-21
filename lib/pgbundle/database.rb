@@ -16,6 +16,7 @@ module PgBundle
       @system_user = opts[:system_user] || 'postgres'
       @port        = opts[:port]        || 5432
       @force_ssh   = opts[:force_ssh]   || false
+      @slave       = opts[:slave]       || false
     end
 
     def connection
@@ -24,6 +25,13 @@ module PgBundle
       end
     end
 
+    def to_s
+      "host: #{@host}:#{port} db: #{@name}"
+    end
+
+    def slave?
+      @slave
+    end
     # executes the given sql on the database connections
     # redirects all noise to /dev/null
     def execute(sql)

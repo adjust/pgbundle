@@ -11,13 +11,14 @@ RSpec.configure do |config|
   config.filter_run focus: true
   config.run_all_when_everything_filtered                 = true
   config.before(:suite) do
-    conn = PG.connect(dbname: 'postgres', user: 'postgres')
+    system "mkdir -p -m 0777 /tmp/pgbundle/"
+    conn = PG.connect(dbname: 'postgres', user: 'postgres', host: 'localhost')
     conn.exec('CREATE DATABASE pgbundle_test')
     conn.close
   end
 
   config.after(:suite) do
-    conn = PG.connect(dbname: 'postgres', user: 'postgres')
+    conn = PG.connect(dbname: 'postgres', user: 'postgres', host: 'localhost')
     conn.exec("SELECT pg_terminate_backend(pid) from pg_stat_activity WHERE datname ='pgbundle_test'")
     conn.exec('DROP DATABASE IF EXISTS pgbundle_test')
     conn.close

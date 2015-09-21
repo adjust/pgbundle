@@ -57,7 +57,7 @@ module PgBundle
       end
     end
 
-    # returns an array hashes with dependency information
+    # returns an array of hashes with dependency information
     # [{name: 'foo', installed: true, created: false }]
     def check
       link_dependencies

@@ -5,12 +5,13 @@ module PgBundle
     def initialize
       @definition = Definition.new
       @extensions = []
+      @databases = []
     end
 
     def eval_pgfile(pgfile, contents=nil)
       contents ||= File.read(pgfile.to_s)
       instance_eval(contents)
-      @definition
+      @databases.map{|d| df = @definition.clone; df.database = d; df}
     rescue SyntaxError => e
       syntax_msg = e.message.gsub("#{pgfile}:", 'on line ')
       raise PgfileError, "Pgfile syntax error #{syntax_msg}"
@@ -24,7 +25,7 @@ module PgBundle
 
     def database(*args)
       opts = extract_options!(args)
-      @definition.database = Database.new(args.first, opts)
+      @databases << Database.new(args.first, opts)
     end
 
     def pgx(*args)

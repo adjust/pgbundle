@@ -9,17 +9,21 @@ module PgBundle
     method_options %w( force -f ) => :boolean
     def install(pgfile = 'Pgfile')
       if options.force?
-        installed = definition(pgfile).install!
+        installed = definitions(pgfile).inject({}){|m, d| m[d.database] = d.install!; m}
       else
-        definition(pgfile).available_extensions.each do |dep|
-          say_status('exists', dep.name)
+        definitions(pgfile).each do |d|
+          d.available_extensions.each do |dep|
+            say_status('exists', "#{d.database}: #{dep.name}")
+          end
         end
 
-        installed = definition(pgfile).install
+        installed = definitions(pgfile).inject({}){|m, d| m[d.database] = d.install; m}
       end
 
-      installed.each do |d|
-        say_status('install', d.name, :yellow)
+      installed.each do |db, deps|
+        deps.each do |d|
+          say_status('install', "#{db}: #{d.name}", :yellow)
+        end
       end
     rescue InstallError, ExtensionCreateError, CircularDependencyError => e
       say_status('error', e.message, :red)
@@ -29,15 +33,17 @@ module PgBundle
     desc 'check', 'checks availability of required extensions'
     def check(pgfile = 'Pgfile')
       missing = false
-      definition(pgfile).check.each do |d|
-        if d[:created]
-          say_status('created', d[:name])
-        else
-          unless d[:installed]
-            say_status('missing', d[:name], :red)
-            missing = true
+      definitions(pgfile).each do |df|
+        df.check.each do |d|
+          if d[:created]
+            say_status('created', "#{df.database}: #{d[:name]}")
+          else
+            unless d[:installed]
+              say_status('missing', "#{df.database}: #{d[:name]}", :red)
+              missing = true
+            end
+            say_status('installed', "#{df.database}: #{d[:name]}", :yellow) if d[:installed]
           end
-          say_status('installed', d[:name], :yellow) if d[:installed]
         end
       end
       exit 1 if missing
@@ -45,8 +51,10 @@ module PgBundle
 
     desc 'create', 'create the extension at the desired version'
     def create(pgfile = 'Pgfile')
-      definition(pgfile).create.each do | d |
-        say_status('created', d.name)
+      definitions(pgfile).each do |df|
+        df.create.each do | d |
+          say_status('created', "#{df.database}: #{d.name}")
+        end
       end
     end
 
@@ -61,9 +69,9 @@ module PgBundle
     end
 
     no_commands do
-      def definition(pgfile)
-        definition = Dsl.new.eval_pgfile(pgfile)
-        definition.link_dependencies
+      def definitions(pgfile)
+        definitions = Dsl.new.eval_pgfile(pgfile)
+        definitions.map(&:link_dependencies)
       end
     end
   end
