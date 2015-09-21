@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/adjust/pgbundle.svg?branch=master)](https://travis-ci.org/adjust/pgbundle)
+
 # pgbundle
 
 bundling postgres extension

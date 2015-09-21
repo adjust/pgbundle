@@ -25,9 +25,9 @@ module PgBundle
     private
 
     def clone
-      %x((rm -rf #{clone_dir} && #{git_command} && rm -rf #{clone_dir}/.git}) 2>&1)
+      res = %x((rm -rf #{clone_dir} && #{git_command} && rm -rf #{clone_dir}/.git}) 2>&1)
       unless $?.success?
-        fail GitCommandError, git_command
+        fail GitCommandError, git_command, res
       end
     end
 

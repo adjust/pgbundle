@@ -125,6 +125,7 @@ module PgBundle
     # create the extension along with it's dependencies in a transaction
     def create_with_dependencies(database)
       return true if created?(database)
+      return false if database.slave?
 
       database.transaction do |con|
         begin
@@ -222,7 +223,7 @@ module PgBundle
     end
 
     def drop_extension(database)
-      database.drop_extension(name)
+      database.drop_extension(name) unless database.slave?
     end
 
     # loads the source and runs make install
@@ -265,6 +266,7 @@ module PgBundle
 
     # hard checks that the dependency can be created running CREATE command in a transaction
     def creatable!(database)
+      return false if database.slave?
       database.transaction_rollback do |con|
         begin
           create_dependencies(con)
@@ -273,6 +275,8 @@ module PgBundle
           raise ExtensionNotFound.new(name, version)
         rescue PG::UndefinedObject => err
           raise MissingDependency.new(name, err.message)
+        rescue PG::ReadOnlySqlTransaction
+          raise ReadOnlyDb.new(database, name)
         end
       end
 
@@ -285,7 +289,7 @@ module PgBundle
       database.execute 'BEGIN'
       begin
         database.execute update_stmt
-      rescue PG::UndefinedFile, PG::UndefinedObject => err
+      rescue PG::UndefinedFile, PG::UndefinedObject, PG::ReadOnlySqlTransaction => err
         @error = err.message
         result = false
       end

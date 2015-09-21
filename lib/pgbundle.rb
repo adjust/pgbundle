@@ -44,6 +44,12 @@ module PgBundle
     end
   end
 
+  class ReadOnlyDb < ExtensionCreateError
+    def initialize(db, base_name)
+      super "Can't install Extension #{base_name}, Database #{db} is read only"
+    end
+  end
+
   class MissingDependency < ExtensionCreateError
     def initialize(base_name, dependen_msg)
       required = dependen_msg[/required extension \"(.*?)\" is not installed/, 1]
@@ -52,8 +58,8 @@ module PgBundle
   end
 
   class GitCommandError < InstallError
-    def initialize(dest)
-      super "Failed to load git repository cmd: '#{dest}'"
+    def initialize(dest, details = nil)
+      super "Failed to load git repository cmd: '#{dest}'\n failed: #{details}"
     end
   end
 end
