@@ -61,6 +61,7 @@ module PgBundle
     desc 'init', 'write an initial pgfile to stdout'
     method_options %w( user -u ) => :string
     method_options %w( host -h ) => :string
+    method_options %w( port -p ) => :string
     def init(db_name)
       definition = PgBundle::Definition.new
       definition.database = PgBundle::Database.new(db_name, options)
