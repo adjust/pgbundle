@@ -123,7 +123,8 @@ module PgBundle
     end
 
     def local(cmd)
-      %x(#{cmd})
+      res = %x((#{cmd}) 2>&1 )
+      raise res unless $?.success?
     end
 
     def remote(cmd)
