@@ -12,14 +12,18 @@ RSpec.configure do |config|
   config.run_all_when_everything_filtered                 = true
   config.before(:suite) do
     system "mkdir -p -m 0777 /tmp/pgbundle/"
-    conn = PG.connect(dbname: 'postgres', user: 'postgres', host: 'localhost')
+    conn = PG.connect(dbname: 'postgres', user: 'postgres', host: 'localhost', port: ENV['PGPORT'] || 5432)
     conn.exec('CREATE DATABASE pgbundle_test')
     conn.close
   end
 
   config.after(:suite) do
-    conn = PG.connect(dbname: 'postgres', user: 'postgres', host: 'localhost')
-    conn.exec("SELECT pg_terminate_backend(pid) from pg_stat_activity WHERE datname ='pgbundle_test'")
+    conn = PG.connect(dbname: 'postgres', user: 'postgres', host: 'localhost', port: ENV['PGPORT'] || 5432)
+    if ENV['PGVERSION']=='9.1'
+      conn.exec("SELECT pg_terminate_backend(procpid) from pg_stat_activity WHERE datname ='pgbundle_test'")
+    else
+      conn.exec("SELECT pg_terminate_backend(pid) from pg_stat_activity WHERE datname ='pgbundle_test'")
+    end
     conn.exec('DROP DATABASE IF EXISTS pgbundle_test')
     conn.close
   end
@@ -42,6 +46,6 @@ RSpec.configure do |config|
   end
 
   def database
-    @db ||= PgBundle::Database.new('pgbundle_test')
+    @db ||= PgBundle::Database.new('pgbundle_test', user: 'postgres', host: 'localhost', port: ENV['PGPORT'] || 5432, use_sudo: ENV['TRAVIS'])
   end
 end

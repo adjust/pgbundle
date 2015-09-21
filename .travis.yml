@@ -7,5 +7,13 @@ rvm:
 matrix:
   allow_failures:
     - rvm: rbx-2
-addons:
-  postgresql: "9.3"
+before_install:
+  - wget https://gist.github.com/petere/5893799/raw/apt.postgresql.org.sh
+  - wget https://gist.github.com/petere/6023944/raw/pg-travis-test.sh
+  - sudo sh ./apt.postgresql.org.sh
+env:
+  - PGVERSION=9.1
+  - PGVERSION=9.2
+  - PGVERSION=9.3
+  - PGVERSION=9.4
+script: bash ./cibuild.sh

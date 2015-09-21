@@ -66,7 +66,7 @@ describe PgBundle::Extension  do
     end
 
     context 'installing from github' do
-      subject { PgBundle::Extension.new('ltree', '1.0', github: 'adjust/ltree') }
+      subject { PgBundle::Extension.new('ltree', '1.0', git: 'https://github.com/adjust/ltree.git') }
 
       before do
         allow_any_instance_of(PgBundle::GithubSource)
