@@ -58,8 +58,8 @@ module PgBundle
   end
 
   class GitCommandError < InstallError
-    def initialize(dest)
-      super "Failed to load git repository cmd: '#{dest}'"
+    def initialize(dest, details = nil)
+      super "Failed to load git repository cmd: '#{dest}'\n failed: #{details}"
     end
   end
 end
