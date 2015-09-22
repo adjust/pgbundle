@@ -20,7 +20,7 @@ database 'my_database', host: 'my.db.server', use_sudo: true, system_user: 'post
 pgx 'hstore'
 pgx 'my_extension', '1.0.2', github: me/my_extension
 pgx 'my_other_extionsion', :git => 'https://github.com/me/my_other_extionsion.git'
-pgx 'my_ltree_dependend_extension', github: me/my_ltree_dependend_extension, require: 'ltree'
+pgx 'my_ltree_dependend_extension', github: me/my_ltree_dependend_extension, requires: 'ltree'
 ```
 
 ### install your extension

@@ -7,7 +7,9 @@ module PgBundle
   autoload :Extension, 'pgbundle/extension'
   autoload :BaseSource, 'pgbundle/base_source'
   autoload :PathSource, 'pgbundle/path_source'
+  autoload :GitSource, 'pgbundle/git_source'
   autoload :GithubSource, 'pgbundle/github_source'
+  autoload :PgxnSource, 'pgbundle/pgxn_source'
 
   class PgfileError < StandardError
   end
@@ -60,6 +62,12 @@ module PgBundle
   class GitCommandError < InstallError
     def initialize(dest, details = nil)
       super "Failed to load git repository cmd: '#{dest}'\n failed: #{details}"
+    end
+  end
+
+  class PgxnError < InstallError
+    def initialize(dest, message = nil)
+      super "Failed to load from pgxn: '#{dest}'\n failed: #{message}"
     end
   end
 end
