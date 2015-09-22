@@ -14,6 +14,7 @@ module PgBundle
     def initialize(*args)
       opts = args.last.is_a?(Hash) ? args.pop : {}
       @name, @version = args
+      validate(opts)
       self.dependencies = opts[:requires]
       set_source(opts)
     end
@@ -181,6 +182,20 @@ module PgBundle
 
     private
 
+    # validates the options hash
+    def validate(opts)
+      opts = opts.clone
+      opts.delete(:requires)
+      opts.delete(:branch)
+      if opts.size > 1
+        fail PgfileError.new "multiple sources given for #{name} #{opts}"
+      end
+
+      unless opts.empty? || [:path, :git, :github, :pgxn].include?(opts.keys.first)
+        fail PgfileError.new "invalid source #{opts.keys.first} for #{name}"
+      end
+    end
+
     # adds dependencies that are required but not defined yet
     def add_missing_required_dependencies(database)
       requires = requires(database)
@@ -301,8 +316,12 @@ module PgBundle
     def set_source(opts)
       if opts[:path]
         @source = PathSource.new(opts[:path])
+      elsif opts[:git]
+        @source = GitSource.new(opts[:git], opts[:branch])
       elsif opts[:github]
         @source = GithubSource.new(opts[:github], opts[:branch])
+      elsif opts[:pgxn]
+        @source = PgxnSource.new(name, version)
       end
     end
   end

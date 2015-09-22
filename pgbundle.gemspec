@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'thor'
   spec.add_dependency 'net-ssh'
   spec.add_dependency 'net-scp'
+  spec.add_dependency 'zip'
   #https://bitbucket.org/ged/ruby-pg/wiki/Home
   spec.add_dependency 'pg', '> 0.17'
   spec.add_development_dependency 'rspec', '~> 2.14.0'
