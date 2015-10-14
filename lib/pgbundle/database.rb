@@ -60,20 +60,20 @@ module PgBundle
     end
 
     # loads the source, runs make install and removes the source afterwards
-    def make_install(source, ext_name)
+    def make_install(source, ext_name, flags)
       run("mkdir -p -m 0777 /tmp/pgbundle/")
       remove_source(ext_name)
       source.load(host, system_user, load_destination(ext_name))
-      run(make_install_cmd(ext_name))
+      run(make_install_cmd(ext_name, flags))
       remove_source(ext_name)
       source.clean
     end
 
     # loads the source and runs make uninstall
-    def make_uninstall(source, ext_name)
+    def make_uninstall(source, ext_name, flags)
       remove_source(ext_name)
       source.load(host, system_user, load_destination(ext_name))
-      run(make_uninstall_cmd(ext_name))
+      run(make_uninstall_cmd(ext_name, flags))
       remove_source(ext_name)
       source.clean
     end
@@ -101,17 +101,17 @@ module PgBundle
       run("rm -rf #{load_destination(name)}")
     end
 
-    def make_install_cmd(name)
+    def make_install_cmd(name, flags)
       <<-CMD.gsub(/\s+/, ' ').strip
         cd #{load_destination(name)} &&
-        #{sudo} make clean &&
-        #{sudo} make &&
-        #{sudo} make install
+        #{sudo} make #{flags} clean &&
+        #{sudo} make #{flags} &&
+        #{sudo} make #{flags} install
       CMD
     end
 
-    def make_uninstall_cmd(name)
-      "cd #{load_destination(name)} && #{sudo} make uninstall"
+    def make_uninstall_cmd(name, flags)
+      "cd #{load_destination(name)} && #{sudo} make #{flags} uninstall"
     end
 
     def run(cmd)
