@@ -4,13 +4,13 @@ module PgBundle
   class Dsl
     def initialize
       @definition = Definition.new
-      @extensions = []
       @databases = []
     end
 
     def eval_pgfile(pgfile, contents=nil)
       contents ||= File.read(pgfile.to_s)
       instance_eval(contents)
+      raise PgfileError, "no databases defined" if @databases.size == 0
       @databases.map{|d| df = @definition.clone; df.database = d; df}
     rescue SyntaxError => e
       syntax_msg = e.message.gsub("#{pgfile}:", 'on line ')
