@@ -10,12 +10,13 @@ module PgBundle
   #   or install it along with it's dependencies
   #   extension.install(database)
   class Extension
-    attr_accessor :name, :version, :source, :resolving_dependencies
+    attr_accessor :name, :version, :source, :resolving_dependencies,:flags
     def initialize(*args)
       opts = args.last.is_a?(Hash) ? args.pop : {}
       @name, @version = args
       validate(opts)
       self.dependencies = opts[:requires]
+      self.flags = opts[:flags]
       set_source(opts)
     end
 
@@ -187,6 +188,7 @@ module PgBundle
       opts = opts.clone
       opts.delete(:requires)
       opts.delete(:branch)
+      opts.delete(:flags)
       if opts.size > 1
         fail PgfileError.new "multiple sources given for #{name} #{opts}"
       end
@@ -233,7 +235,7 @@ module PgBundle
     # loads the source and runs make uninstall
     # returns: self
     def make_uninstall(database)
-      database.make_uninstall(source, name)
+      database.make_uninstall(source, name, flags)
       self
     end
 
@@ -248,7 +250,7 @@ module PgBundle
 
       fail SourceNotFound, name if source.nil?
 
-      database.make_install(source, name)
+      database.make_install(source, name, flags)
       self
     end
 

@@ -54,6 +54,7 @@ branch      | an optional branch name for git or github sources defaults to `mas
 requires    | an optional extension that the extension depends on
 path        | any absolute or relative local path e.g. './foo/bar'
 pgxn        | any repository available on http://pgxn.org/
+flags       | optional string used for make results in "make flags && make flags install"
 
 
 Some Extensions may require other Extensions to allow `pgbundle` to resolve dependencies
