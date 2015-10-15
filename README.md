@@ -76,6 +76,9 @@ pgx 'bar', '1.2.3', github: me/bar, requires: 'foo'
 # set bar and boo as dependency for baz
 # will automatically set foo as dependency as well
 pgx 'baz', '0.2.3', github: me/baz, requires: ['bar', 'boo']
+# installs jsquery with flag 'USE_PGXS=1'
+# i.e. running make USE_PGXS=1 && make USE_PGXS=1 install
+pgx 'jsquery', github: 'postgrespro/jsquery', flags: 'USE_PGXS=1'
 ```
 
 ## pgbundle commands
