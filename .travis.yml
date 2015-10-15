@@ -4,9 +4,11 @@ rvm:
   - rbx-2
   - 2.0.0
   - 2.1.1
+  - 2.2.3
 matrix:
   allow_failures:
     - rvm: rbx-2
+    - rvm: 1.9.3
 before_install:
   - wget https://gist.github.com/petere/5893799/raw/apt.postgresql.org.sh
   - wget https://gist.github.com/petere/6023944/raw/pg-travis-test.sh
