@@ -7,10 +7,12 @@ module PgBundle
   # on a typical environment ssh access is needed if the database host differs from
   # the Pgfile host
   class Database
-    attr_accessor :name, :user, :host, :system_user, :use_sudo, :port, :force_ssh
+    attr_accessor :name, :user, :password, :host, :system_user, :use_sudo, :port, :force_ssh
+
     def initialize(name, opts = {})
       @name        = name
       @user        = opts[:user]        || 'postgres'
+      @password    = opts[:password]
       @host        = opts[:host]        || 'localhost'
       @use_sudo    = opts[:use_sudo]    || false
       @system_user = opts[:system_user] || 'postgres'
@@ -21,8 +23,18 @@ module PgBundle
 
     def connection
       @connection ||= begin
-        PG.connect(dbname: name, user: user, host: host, port: port)
+        PG.connect(connection_opts)
       end
+    end
+
+    def connection_opts
+      {
+        dbname: name,
+        user: user,
+        password: password,
+        host: host,
+        port: port
+      }.compact
     end
 
     def to_s
